@@ -40,9 +40,17 @@ def llm_generate(llm, prompt):
     res = chain.invoke({"prompt": prompt})
     return res
 
+def read_PDF(path):
+    reader = PdfReader(path)
+    text = ""
+    for i, page in enumerate(reader.pages):
+        print(f"--- Página {i + 1} ---")
+        print(page.extract_text())
+        text += page.extract_text() + "\n"
+    return text
+
 
 llm = load_llm(id_model, temperature)
 
-res = llm_generate(llm, "requisitos para uma vaga de dados")
-
-print(res)
+curriculo = read_PDF("curriculo_teste.pdf")
+print(curriculo[0:500])
