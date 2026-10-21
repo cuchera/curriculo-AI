@@ -1,7 +1,7 @@
 import os
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
+from langchain_core.output_parsers import JsonOutputParser
 from dotenv import load_dotenv
 from pypdf import PdfReader
 
@@ -23,6 +23,9 @@ def load_llm(id_model, temperature):
   return llm
 
 def gerar_curriculo_otimizado(llm, contexto_usuario, vaga_texto):
+    # Objeto para obrigar a resposta vir em json 
+    parser = JsonOutputParser()
+
     template = ChatPromptTemplate.from_messages([
         ("system", 
          "Você é um especialista em recrutamento e otimização de currículos para ATS.\n\n"
@@ -46,10 +49,12 @@ def gerar_curriculo_otimizado(llm, contexto_usuario, vaga_texto):
         )
     ])
 
-    chain = template | llm | StrOutputParser()
+    chain = template | llm | parser
     return chain.invoke({
         "contexto_usuario": contexto_usuario,
-        "vaga_texto": vaga_texto
+        "vaga_texto": vaga_texto,
+        # Obrigar mais ainda a resposta vir em Json para não ter erro
+        "format_instruction": parser.get_format_instructions()
     })
 
 def read_PDF(path):
@@ -60,7 +65,7 @@ def read_PDF(path):
         text += page.extract_text() + "\n"
     return text
 
-
+# Inicializar LLM
 llm = load_llm(id_model, temperature)
 
 curriculo = read_PDF("curriculo_teste.pdf")
