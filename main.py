@@ -22,22 +22,35 @@ def load_llm(id_model, temperature):
   )
   return llm
 
-def llm_generate(llm, prompt):
+def gerar_curriculo_otimizado(llm, contexto_usuario, vaga_texto):
     template = ChatPromptTemplate.from_messages([
         ("system", 
-         "Você é um recrutador experiente no Brasil.\n"
-         "Regras:\n"
-         "- Use apenas informações presentes no currículo. Nunca invente experiências, ferramentas ou resultados.\n"
-         "- Se um requisito da vaga não aparece no currículo, marque como não encontrado.\n"
-         "- Não exagere o nível de conhecimento do candidato.\n"
-         "- Responda apenas com JSON, sem texto antes ou depois.\n"),
+         "Você é um especialista em recrutamento e otimização de currículos para ATS.\n\n"
+         "OBJETIVO:\n"
+         "Reescrever e organizar as experiências do candidato para que fiquem o mais aderentes "
+         "possível à vaga desejada, destacando palavras-chave e conquistas relevantes.\n\n"
+         "REGRAS INEGOCIÁVEIS:\n"
+         "1. NUNCA invente ou infira habilidades, tecnologias, cargos, datas ou resultados que não "
+         "estejam explicitamente mencionados no histórico do candidato.\n"
+         "2. Se a vaga exige um requisito que o candidato NÃO possui no histórico, simplesmente OMITA "
+         "ou mantenha a informação real existente. Não tente inventar para preencher a lacuna.\n"
+         "3. Reorganize e reescreva tópicos para enfatizar pontos fortes que coincidem com a vaga.\n"
+         "4. A resposta deve ser estritamente no formato JSON estruturado.\n"
+        ),
         ("human",
-         "{prompt}")
+         "--- HISTÓRICO E CURRÍCULO DO CANDIDATO ---\n"
+         "{contexto_usuario}\n\n"
+         "--- DESCRIÇÃO DA VAGA ALVO ---\n"
+         "{vaga_texto}\n\n"
+         "Gere o currículo otimizado no formato JSON."
+        )
     ])
 
     chain = template | llm | StrOutputParser()
-    res = chain.invoke({"prompt": prompt})
-    return res
+    return chain.invoke({
+        "contexto_usuario": contexto_usuario,
+        "vaga_texto": vaga_texto
+    })
 
 def read_PDF(path):
     reader = PdfReader(path)
