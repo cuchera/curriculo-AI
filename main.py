@@ -1,4 +1,4 @@
-import os
+import os, json
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
@@ -68,5 +68,38 @@ def read_PDF(path):
 # Inicializar LLM
 llm = load_llm(id_model, temperature)
 
-curriculo = read_PDF("curriculo_teste.pdf")
-print(curriculo[0:500])
+# Ler o PDF
+texto_pdf = read_PDF("curriculo_teste.pdf")
+
+# Informações adicionais do usuário (Texto adicionais sobre a vida profissional do usuário) / texto atual apenas para testes
+texto_adicional_usuario = """
+Conquistas e detalhes adicionais:
+- No projeto de migração para Docker na Empresa Exemplo Ltda., criei scripts em Python e Bash para automatizar a subida dos containers, reduzindo o tempo do processo em 20%.
+- Desenvolvi por conta própria uma automação em Python usando a API do Telegram e SQLite para responder dúvidas frequentes dos usuários da empresa.
+- Tenho experiência prática em consultas SQL intermediárias (JOINs, GROUP BY) desenvolvidas em projetos da faculdade de Engenharia da Computação.
+- Tenho interesse em atuar com Python, automação de processos, APIs e integração com modelos de IA.
+"""
+
+# Unir o PDF + Texto do usuário num contexto só
+contexto_completo_usuario = f"{texto_pdf}\n\n--- INFORMAÇÕES ADICIONAIS DO USUÁRIO ---\n{texto_adicional_usuario}"
+
+# Descrição da Vaga Desejada / exemplo apenas para testes
+vaga_alvo = """
+Vaga: Desenvolvedor Python Júnior / Automação
+Requisitos:
+- Conhecimento em linguagem Python para automação de tarefas e criação de scripts.
+- Domínio de banco de dados SQL e controle de versão com Git.
+- Vivência com Linux e ambientes conteinerizados (Docker).
+- Boa comunicação para suporte e entendimento de chamados/requisitos.
+- Diferencial: Conhecimento básico em APIs, bots ou integração com IA.
+"""
+
+# Gerar Currículo Otimizado
+print("Gerando currículo adaptado...")
+curriculo_json = gerar_curriculo_otimizado(llm, contexto_completo_usuario, vaga_alvo)
+
+# Salvar resultado em ficheiro JSON
+with open("curriculo_otimizado.json", "w", encoding="utf-8") as f:
+    json.dump(curriculo_json, f, ensure_ascii=False, indent=4)
+
+print("Currículo gerado e salvo em 'curriculo_otimizado.json' com sucesso!")
