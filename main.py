@@ -22,7 +22,7 @@ def load_llm(id_model, temperature):
   )
   return llm
 
-def gerar_curriculo_otimizado(llm, contexto_usuario, vaga_texto):
+def gerar_curriculo_otimizado(llm, modelo_pdf_texto, contexto_usuario, vaga_texto):
     # Objeto para obrigar a resposta vir em json 
     parser = JsonOutputParser()
 
@@ -41,6 +41,8 @@ def gerar_curriculo_otimizado(llm, contexto_usuario, vaga_texto):
          "4. A resposta deve ser estritamente no formato JSON estruturado.\n"
         ),
         ("human",
+         "--- PDF MODELO DE REFERÊNCIA (Siga este layout/estrutura) ---\n"
+         "{modelo_pdf_texto}\n\n"
          "--- HISTÓRICO E CURRÍCULO DO CANDIDATO ---\n"
          "{contexto_usuario}\n\n"
          "--- DESCRIÇÃO DA VAGA ALVO ---\n"
@@ -51,6 +53,7 @@ def gerar_curriculo_otimizado(llm, contexto_usuario, vaga_texto):
 
     chain = template | llm | parser
     return chain.invoke({
+        "modelo_pdf_texto": modelo_pdf_texto,
         "contexto_usuario": contexto_usuario,
         "vaga_texto": vaga_texto,
         # Obrigar mais ainda a resposta vir em Json para não ter erro
@@ -70,6 +73,7 @@ llm = load_llm(id_model, temperature)
 
 # Ler o PDF
 texto_pdf = read_PDF("curriculo_teste.pdf")
+modelo_pdf = read_PDF("Modelo CV.pdf")
 
 # Informações adicionais do usuário (Texto adicionais sobre a vida profissional do usuário) / texto atual apenas para testes
 texto_adicional_usuario = """
